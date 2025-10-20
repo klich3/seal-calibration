@@ -1,0 +1,309 @@
+Metadata-Version: 2.4
+Name: seal-calibration
+Version: 0.1.0
+Summary: Calibration library for 3DMakerPro SEAL 3D scanners
+Home-page: https://github.com/klich3/3dMakerPro-SEAL-Calibration-script
+Author: Anton Sychev
+License: CC BY-NC 4.0
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+Requires-Dist: numpy<3,>=1.24
+Requires-Dist: opencv-python<5,>=4.6
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
+# SEAL Calibration Library
+
+> 📦 Librería Python profesional para calibración de escáneres 3D SEAL de 3DMakerPro
+
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
+[![OpenCV](https://img.shields.io/badge/opencv-4.5%2B-green)](https://opencv.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+
+## 🎯 Descripción
+
+**SEAL Calibration** es una librería modular y reutilizable que proporciona herramientas completas para calibración de sistemas de visión estéreo. Diseñada específicamente para escáneres 3D SEAL y SEAL Lite de 3DMakerPro.
+
+### ✨ Características principales
+
+- 📷 **Calibración individual** de cámaras con múltiples patrones
+- 🎯 **Calibración estéreo** de alta precisión  
+- 🎨 **Calibración de proyector** con patrones de luz estructurada
+- 💾 **Exportación** en formato SEAL compatible
+- 🔧 **API modular** y extensible
+- 📊 **Validación** y visualización de resultados
+
+---
+
+## 📁 Arquitectura
+
+La librería está organizada en módulos especializados:
+
+```
+seal_calibration/
+├── core/              # Algoritmos de calibración
+│   ├── camera.py      # Calibración de cámara individual
+│   ├── stereo.py      # Calibración estéreo
+│   ├── projector.py   # Calibración de proyector
+│   └── validation.py  # Validación de resultados
+│
+├── io/                # Entrada/Salida
+│   ├── loader.py      # Carga archivos SEAL
+│   ├── writer.py      # Escribe archivos SEAL
+│   └── parser.py      # Parser de formato
+│
+├── pattern/           # Detección de patrones
+│   ├── chessboard.py  # Tablero de ajedrez
+│   ├── circles.py     # Círculos asimétricos
+│   ├── charuco.py     # ChArUco board
+│   └── stripes.py     # Patrones de franjas
+│
+├── utils/             # Utilidades
+│   ├── geometry.py    # Transformaciones geométricas
+│   ├── image.py       # Procesamiento de imagen
+│   └── visualization.py  # Visualización
+│
+└── models/            # Modelos de datos
+    ├── camera_params.py  # Parámetros de cámara
+    ├── stereo_params.py  # Parámetros estéreo
+    └── seal_calib.py     # Calibración SEAL completa
+```
+
+---
+
+## 🚀 Instalación
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/yourusername/seal-calibration.git
+cd seal-calibration
+
+# Instalar con pip
+pip install -e .
+
+# O con dependencias de desarrollo
+pip install -e ".[dev]"
+```
+
+### 📦 Requisitos
+
+- Python 3.8+
+- NumPy >= 1.21.0
+- OpenCV >= 4.5.0
+- SciPy >= 1.7.0
+
+---
+
+## 💡 Uso Rápido
+
+### Calibración básica de cámara
+
+```python
+from seal_calibration import CameraCalibrator, ChessboardDetector
+
+# Crear detector de patrón
+detector = ChessboardDetector(rows=6, cols=9, square_size=25.0)
+
+# Crear calibrador
+calibrator = CameraCalibrator(detector)
+
+# Calibrar (después de recopilar objpoints e imgpoints)
+camera_params = calibrator.calibrate(objpoints, imgpoints, img_size)
+
+print(f"Error RMS: {camera_params.rms_error:.4f}")
+print(f"fx={camera_params.fx:.2f}, fy={camera_params.fy:.2f}")
+```
+
+### Calibración estéreo
+
+```python
+from seal_calibration import StereoCalibrator
+
+# Crear calibrador estéreo
+stereo_cal = StereoCalibrator()
+
+# Calibrar
+stereo_params = stereo_cal.calibrate(
+    objpoints, 
+    imgpoints_left, 
+    imgpoints_right,
+    camera_left, 
+    camera_right, 
+    img_size
+)
+
+print(f"Baseline: {stereo_params.baseline:.2f} mm")
+```
+
+### Exportar a formato SEAL
+
+```python
+from seal_calibration import SEALCalibration, SEALCalibrationWriter
+
+# Crear objeto de calibración SEAL
+seal_calib = SEALCalibration(
+    resolution=(1280, 720),
+    scale_factors=(11.6, 4.4),  # DE LA PLANTILLA
+    offset_center=(162, 110),    # DE LA PLANTILLA
+    offset_tilt=(4, -80),        # DE LA PLANTILLA
+    camera_left=camera_left,
+    camera_right=camera_right,
+    stereo=stereo_params,
+    metadata={'dev_id': 'JMS1006207'}
+)
+
+# Exportar
+SEALCalibrationWriter.write(
+    seal_calib, 
+    "output.txt", 
+    template_path="template.txt"
+)
+```
+
+---
+
+## 📚 Ejemplos
+
+Consulta la carpeta [`examples/`](examples/) para ejemplos completos:
+
+- [`basic_calibration.py`](examples/basic_calibration.py) - Calibración de una cámara
+- [`stereo_calibration.py`](examples/stereo_calibration.py) - Calibración estéreo
+- [`seal_format_export.py`](examples/seal_format_export.py) - Exportación a formato SEAL
+
+---
+
+## 🎨 Patrones soportados
+
+| Patrón | Detector | Descripción |
+|:------:|:--------:|:------------|
+| ♟️ Chessboard | `ChessboardDetector` | Tablero de ajedrez clásico |
+| ⚪ Circles | `CirclesDetector` | Círculos asimétricos |
+| 🎯 ChArUco | `CharucoDetector` | Combinación ArUco + Chessboard |
+| 📐 Stripes | `StripesDetector` | Franjas para luz estructurada |
+
+---
+
+## ⚠️ Parámetros de Fábrica
+
+**CRÍTICO:** Las líneas 2-4 del archivo SEAL contienen parámetros de fábrica calibrados con equipamiento especializado:
+
+- **Línea 2**: Factores de escala (baseline, profundidad)
+- **Línea 3**: Offset del centro de proyección
+- **Línea 4**: Corrección angular y altura del proyector
+
+**Estos parámetros NO deben modificarse** durante la calibración, ya que causarían:
+- Alteración de escala 3D
+- Desplazamiento/distorsión de la escena
+- Inclinación o arqueo del plano 3D
+
+La librería preserva automáticamente estos valores cuando se usa una plantilla.
+
+---
+
+## 🔧 API Referencia
+
+### Módulos principales
+
+- **`seal_calibration.core`** - Algoritmos de calibración
+- **`seal_calibration.io`** - Lectura/escritura de archivos
+- **`seal_calibration.pattern`** - Detección de patrones
+- **`seal_calibration.utils`** - Utilidades auxiliares
+- **`seal_calibration.models`** - Modelos de datos
+
+### Clases principales
+
+```python
+# Calibradores
+from seal_calibration import (
+    CameraCalibrator,      # Calibración de cámara
+    StereoCalibrator,      # Calibración estéreo
+    ProjectorCalibrator,   # Calibración de proyector
+)
+
+# Detectores de patrones
+from seal_calibration import (
+    ChessboardDetector,
+    CirclesDetector,
+    CharucoDetector,
+    StripesDetector,
+)
+
+# I/O
+from seal_calibration import (
+    SEALCalibrationLoader,
+    SEALCalibrationWriter,
+)
+
+# Modelos
+from seal_calibration import (
+    CameraParams,
+    StereoParams,
+    SEALCalibration,
+)
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Ejecutar tests
+pytest tests/
+
+# Con cobertura
+pytest --cov=seal_calibration tests/
+```
+
+---
+
+## 📖 Documentación
+
+Para documentación del proyecto heredado y scripts CLI, consulta:
+
+- [`LEGACY_README.md`](LEGACY_README.md) - Documentación del proyecto original
+- [`GRAY_CODE_GUIDE.md`](GRAY_CODE_GUIDE.md) - Guía de calibración con Gray Code
+- [`PROJECTOR_CALIBRATION.md`](PROJECTOR_CALIBRATION.md) - Calibración de proyector
+
+---
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia CC BY-NC 4.0. Ver [`LICENSE.md`](LICENSE.md) para más detalles.
+
+---
+
+## ⚠️ Disclaimer
+
+Este software se proporciona **"tal cual"**, sin garantía de ningún tipo.
+
+- El uso indebido puede **anular la garantía** del dispositivo
+- El autor **no es responsable** de daños, pérdidas o fallos resultantes del uso
+
+**Úsalo bajo tu propio riesgo.**
+
+---
+
+## 🙏 Agradecimientos
+
+- Proyecto desarrollado independientemente para escáneres **3DMakerPro SEAL Lite**
+- **No está afiliado** con 3DMakerPro o sus distribuidores
+- Basado en **OpenCV** y algoritmos de visión por computadora estándar
+
+---
+
+**Made with ❤️ for the 3D scanning community**

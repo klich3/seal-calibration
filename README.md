@@ -1,0 +1,297 @@
+# SEAL Calibration Library
+
+> 📦 Professional Python library for calibrating 3DMakerPro SEAL 3D scanners
+
+***ORIGINAL PROJECT***
+`https://github.com/klich3/3dMakerPro-SEAL-Calibration-script`
+
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
+[![OpenCV](https://img.shields.io/badge/opencv-4.5%2B-green)](https://opencv.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+
+## 🎯 Description
+
+**SEAL Calibration** is a modular and reusable library that provides complete tools for stereo vision system calibration. Specifically designed for 3DMakerPro SEAL and SEAL Lite 3D scanners.
+
+### ✨ Key Features
+
+- 📷 **Individual camera calibration** with multiple patterns
+- 🎯 **High-precision stereo calibration**  
+- 🎨 **Projector calibration** with structured light patterns
+- 💾 **Export** to SEAL-compatible format
+- 🔧 **Modular and extensible** API
+- 📊 **Validation** and visualization of results
+
+---
+
+## 📁 Architecture
+
+The library is organized into specialized modules:
+
+```
+seal_calibration/
+├── core/              # Calibration algorithms
+│   ├── camera.py      # Individual camera calibration
+│   ├── stereo.py      # Stereo calibration
+│   ├── projector.py   # Projector calibration
+│   └── validation.py  # Results validation
+│
+├── io/                # Input/Output
+│   ├── loader.py      # Load SEAL files
+│   ├── writer.py      # Write SEAL files
+│   └── parser.py      # Format parser
+│
+├── pattern/           # Pattern detection
+│   ├── chessboard.py  # Chessboard pattern
+│   ├── circles.py     # Asymmetric circles
+│   ├── charuco.py     # ChArUco board
+│   └── stripes.py     # Stripe patterns
+│
+├── utils/             # Utilities
+│   ├── geometry.py    # Geometric transformations
+│   ├── image.py       # Image processing
+│   └── visualization.py  # Visualization
+│
+└── models/            # Data models
+    ├── camera_params.py  # Camera parameters
+    ├── stereo_params.py  # Stereo parameters
+    └── seal_calib.py     # Complete SEAL calibration
+```
+
+---
+
+## 🚀 Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/seal-calibration.git
+cd seal-calibration
+
+# Install with pip
+pip install -e .
+
+# Or with development dependencies
+pip install -e ".[dev]"
+```
+
+### 📦 Requirements
+
+- Python 3.8+
+- NumPy >= 1.21.0
+- OpenCV >= 4.5.0
+- SciPy >= 1.7.0
+
+---
+
+## 💡 Quick Start
+
+### Basic camera calibration
+
+```python
+from seal_calibration import CameraCalibrator, ChessboardDetector
+
+# Create pattern detector
+detector = ChessboardDetector(rows=6, cols=9, square_size=25.0)
+
+# Create calibrator
+calibrator = CameraCalibrator(detector)
+
+# Calibrate (after collecting objpoints and imgpoints)
+camera_params = calibrator.calibrate(objpoints, imgpoints, img_size)
+
+print(f"RMS Error: {camera_params.rms_error:.4f}")
+print(f"fx={camera_params.fx:.2f}, fy={camera_params.fy:.2f}")
+```
+
+### Stereo calibration
+
+```python
+from seal_calibration import StereoCalibrator
+
+# Create stereo calibrator
+stereo_cal = StereoCalibrator()
+
+# Calibrate
+stereo_params = stereo_cal.calibrate(
+    objpoints, 
+    imgpoints_left, 
+    imgpoints_right,
+    camera_left, 
+    camera_right, 
+    img_size
+)
+
+print(f"Baseline: {stereo_params.baseline:.2f} mm")
+```
+
+### Export to SEAL format
+
+```python
+from seal_calibration import SEALCalibration, SEALCalibrationWriter
+
+# Create SEAL calibration object
+seal_calib = SEALCalibration(
+    resolution=(1280, 720),
+    scale_factors=(11.6, 4.4),  # FROM TEMPLATE
+    offset_center=(162, 110),    # FROM TEMPLATE
+    offset_tilt=(4, -80),        # FROM TEMPLATE
+    camera_left=camera_left,
+    camera_right=camera_right,
+    stereo=stereo_params,
+    metadata={'dev_id': 'JMS1006207'}
+)
+
+# Export
+SEALCalibrationWriter.write(
+    seal_calib, 
+    "output.txt", 
+    template_path="template.txt"
+)
+```
+
+---
+
+## 📚 Examples
+
+Check the [`examples/`](examples/) folder for complete examples:
+
+- [`basic_calibration.py`](examples/basic_calibration.py) - Single camera calibration
+- [`stereo_calibration.py`](examples/stereo_calibration.py) - Stereo calibration
+- [`stereo_calibration_complete.py`](examples/stereo_calibration_complete.py) - Complete stereo workflow
+- [`seal_format_export.py`](examples/seal_format_export.py) - SEAL format export
+- [`stereo_to_seal.py`](examples/stereo_to_seal.py) - Stereo to SEAL conversion
+
+---
+
+## 🎨 Supported Patterns
+
+| Pattern | Detector | Description |
+|:------:|:--------:|:------------|
+| ♟️ Chessboard | `ChessboardDetector` | Classic chessboard pattern |
+| ⚪ Circles | `CirclesDetector` | Asymmetric circles |
+| 🎯 ChArUco | `CharucoDetector` | ArUco + Chessboard combination |
+| 📐 Stripes | `StripesDetector` | Stripes for structured light |
+
+---
+
+## ⚠️ Factory Parameters
+
+**CRITICAL:** Lines 2-4 of the SEAL file contain factory parameters calibrated with specialized equipment:
+
+- **Line 2**: Scale factors (baseline, depth)
+- **Line 3**: Projection center offset
+- **Line 4**: Angular correction and projector height
+
+**These parameters MUST NOT be modified** during calibration, as they would cause:
+- 3D scale alteration
+- Scene displacement/distortion
+- Tilting or bowing of the 3D plane
+
+The library automatically preserves these values when using a template.
+
+---
+
+## 🔧 API Reference
+
+### Main Modules
+
+- **`seal_calibration.core`** - Calibration algorithms
+- **`seal_calibration.io`** - File reading/writing
+- **`seal_calibration.pattern`** - Pattern detection
+- **`seal_calibration.utils`** - Auxiliary utilities
+- **`seal_calibration.models`** - Data models
+
+### Main Classes
+
+```python
+# Calibrators
+from seal_calibration import (
+    CameraCalibrator,      # Camera calibration
+    StereoCalibrator,      # Stereo calibration
+    ProjectorCalibrator,   # Projector calibration
+)
+
+# Pattern detectors
+from seal_calibration import (
+    ChessboardDetector,
+    CirclesDetector,
+    CharucoDetector,
+    StripesDetector,
+)
+
+# I/O
+from seal_calibration import (
+    SEALCalibrationLoader,
+    SEALCalibrationWriter,
+)
+
+# Models
+from seal_calibration import (
+    CameraParams,
+    StereoParams,
+    SEALCalibration,
+)
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run tests
+pytest tests/
+
+# With coverage
+pytest --cov=seal_calibration tests/
+```
+
+---
+
+## 📖 Documentation
+
+For legacy project documentation and CLI scripts, see:
+
+- [`LEGACY_README.md`](LEGACY_README.md) - Original project documentation
+- [`GRAY_CODE_GUIDE.md`](GRAY_CODE_GUIDE.md) - Gray Code calibration guide
+- [`PROJECTOR_CALIBRATION.md`](PROJECTOR_CALIBRATION.md) - Projector calibration
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome. Please:
+
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under CC BY-NC 4.0. See [`LICENSE.md`](LICENSE.md) for details.
+
+---
+
+## ⚠️ Disclaimer
+
+This software is provided **"as is"**, without warranty of any kind.
+
+- Misuse may **void the device warranty**
+- The author is **not responsible** for damages, losses, or failures resulting from use
+
+**Use at your own risk.**
+
+---
+
+## 🙏 Acknowledgments
+
+- Project independently developed for **3DMakerPro SEAL Lite** scanners
+- **Not affiliated** with 3DMakerPro or its distributors
+- Based on **OpenCV** and standard computer vision algorithms
+
+---
+
+**Made with ❤️ for the 3D scanning community**
