@@ -13,6 +13,7 @@ from .models.stereo_params import StereoParams
 from .models.seal_calib import SEALCalibration
 
 from .core.camera import CameraCalibrator
+from .core.charuco_camera import CharucoCameraCalibrator
 from .core.stereo import StereoCalibrator
 from .core.projector import ProjectorCalibrator
 
@@ -25,6 +26,7 @@ __all__ = [
     "StereoParams",
     "SEALCalibration",
     "CameraCalibrator",
+    "CharucoCameraCalibrator",
     "StereoCalibrator",
     "ProjectorCalibrator",
     "SEALCalibrationLoader",

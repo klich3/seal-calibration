@@ -352,6 +352,25 @@ def main():
         camera_left, camera_right, img_size
     )
     
+    # CRITICAL: Update camera parameters with stereo refined distortion coefficients
+    # With CALIB_FIX_INTRINSIC | CALIB_RATIONAL_MODEL:
+    # - Intrinsics (fx, fy, cx, cy) remain from individual calibration  
+    # - Distortion coefficients are expanded from 5 to 8 and refined
+    # We MUST use the refined 8-coefficient distortion from stereo_params
+    camera_left = CameraParams(
+        K=camera_left.K,  # Keep original K (CALIB_FIX_INTRINSIC)
+        dist=stereo_params.dist_left,  # Use refined 8 coefficients
+        img_size=img_size,
+        rms_error=camera_left.rms_error
+    )
+    
+    camera_right = CameraParams(
+        K=camera_right.K,  # Keep original K (CALIB_FIX_INTRINSIC)
+        dist=stereo_params.dist_right,  # Use refined 8 coefficients
+        img_size=img_size,
+        rms_error=camera_right.rms_error
+    )
+    
     # Print detailed report
     print_calibration_report(camera_left, camera_right, stereo_params)
     

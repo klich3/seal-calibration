@@ -46,39 +46,47 @@ class CameraParams:
     @property
     def k1(self) -> float:
         """Radial distortion k1"""
-        return self.dist[0, 0] if self.dist.shape[1] > 0 else 0.0
+        dist_flat = self.dist.flatten()
+        return float(dist_flat[0]) if len(dist_flat) > 0 else 0.0
     
     @property
     def k2(self) -> float:
         """Radial distortion k2"""
-        return self.dist[0, 1] if self.dist.shape[1] > 1 else 0.0
+        dist_flat = self.dist.flatten()
+        return float(dist_flat[1]) if len(dist_flat) > 1 else 0.0
     
     @property
     def p1(self) -> float:
         """Tangential distortion p1"""
-        return self.dist[0, 2] if self.dist.shape[1] > 2 else 0.0
+        dist_flat = self.dist.flatten()
+        return float(dist_flat[2]) if len(dist_flat) > 2 else 0.0
     
     @property
     def p2(self) -> float:
         """Tangential distortion p2"""
-        return self.dist[0, 3] if self.dist.shape[1] > 3 else 0.0
+        dist_flat = self.dist.flatten()
+        return float(dist_flat[3]) if len(dist_flat) > 3 else 0.0
     
     @property
     def k3(self) -> float:
         """Radial distortion k3"""
-        return self.dist[0, 4] if self.dist.shape[1] > 4 else 0.0
+        dist_flat = self.dist.flatten()
+        return float(dist_flat[4]) if len(dist_flat) > 4 else 0.0
     
     @property
     def k4(self) -> float:
-        """Radial distortion k4"""
-        return self.dist[0, 5] if self.dist.shape[1] > 5 else 0.0
+        """Radial distortion k4 (RATIONAL_MODEL)"""
+        dist_flat = self.dist.flatten()
+        return float(dist_flat[5]) if len(dist_flat) > 5 else 0.0
     
     @property
     def k5(self) -> float:
-        """Radial distortion k5"""
-        return self.dist[0, 6] if self.dist.shape[1] > 6 else 0.0
+        """Radial distortion k5 (RATIONAL_MODEL)"""
+        dist_flat = self.dist.flatten()
+        return float(dist_flat[6]) if len(dist_flat) > 6 else 0.0
     
     @property
     def k6(self) -> float:
-        """Radial distortion k6"""
-        return self.dist[0, 7] if self.dist.shape[1] > 7 else 0.0
+        """Radial distortion k6 (RATIONAL_MODEL)"""
+        dist_flat = self.dist.flatten()
+        return float(dist_flat[7]) if len(dist_flat) > 7 else 0.0

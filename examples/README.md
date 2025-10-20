@@ -34,8 +34,8 @@ python stereo_calibration.py --from-images calib_imgs/
 ```
 
 **Parámetros:**
-- `--left`: Índice de cámara izquierda (default: 0)
-- `--right`: Índice de cámara derecha (default: 1)
+- `--left`: Índice de cámara izquierda (default: 0) proyector laseer
+- `--right`: Índice de cámara derecha (default: 1) camera con UV
 - `--rows`: Filas del patrón (default: 6)
 - `--cols`: Columnas del patrón (default: 9)
 - `--square-size`: Tamaño del cuadrado en mm (default: 25.0)
@@ -57,7 +57,7 @@ Calibración estéreo completa con exportación SEAL.
 **Uso desde cámaras:**
 ```bash
 python stereo_calibration_complete.py \
-  --left 0 --right 1 \
+  --left 1 --right 0 \
   --template calibJMS1006207.txt \
   --dev-id JMS1006207
 ```
@@ -122,9 +122,15 @@ python seal_format_export.py
 1. **Capturar imágenes:**
 ```bash
 python stereo_calibration_complete.py \
-  --left 0 --right 1 \
+  --left 1 --right 0 \
   --images 20 \
   --output-dir calib_imgs
+```
+
+o
+
+```bash
+python stereo_calibration_complete.py --template calibJMS1006207.txt  --dev-id JMS1006207 --pattern-type chessboard --rows 6 --cols 9  --square-size 3.0 --left 0 --right 1
 ```
 
 2. **Procesar y exportar:**
@@ -195,6 +201,21 @@ python stereo_calibration_complete.py --from-images calib_imgs/ --template calib
 - Verifica que el patrón esté plano y sin distorsiones
 
 ---
+
+## Charuco
+
+```shell
+python stereo_calibration_complete.py \
+  --template calibJMS1006207.txt \
+  --dev-id JMS1006207 \
+  --pattern-type charuco \
+  --square-size 40.0 \
+  --marker-size 7.85 \
+  --rows 4 \
+  --cols 11 \
+  --left 0 \
+  --right 1
+```
 
 ## 📚 Referencias
 
